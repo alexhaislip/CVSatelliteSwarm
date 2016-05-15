@@ -345,6 +345,6 @@ class Vec2d(object):
         return cls((math.cos(angle), math.cos(angle)))
 
     @classmethod
-    def from_angle_rad(cls, angle):
+    def from_angle_deg(cls, angle):
         """returns a vector representing a normalized angle"""
         return cls.from_angle_rad(math.radians(angle))
