@@ -23,17 +23,11 @@ class Robot():
         self.speed = 0
 
         self.target = None
-        self.avoid_radius = 50
 
         self.collision = False
 
         random.seed(id(self))
         self.color = (random.randrange(0,255), random.randrange(0,255), random.randrange(0,255))
-
-        #DEBUG:
-        self.mean_direction = Vec2d((0,0))
-        self.first = False
-
 
     def transform_to_local(self, robot):
         position = copy(robot.position)
@@ -69,11 +63,10 @@ class Robot():
             self.speed = 1
             if self.position.get_distance(self.target) < 10:
                 self.seek_target = False
-                self.avoid_radius = 20
-                self.direction = Vec2d((0,0))
+                self.direction = Vec2d(0,0)
+                self.target = None
             else:
                 self.seek_target = True
-                self.avoid_radius = 50
                 self.direction = (self.target - self.position).normalized()
 
         robots = filter(lambda x: id(x) != id(self), global_robots)
@@ -82,44 +75,16 @@ class Robot():
         for i in self.local_robots:
             if -20 < i.position.x < 20 and 0 < i.position.y < 120:
                 self.collision = True
-            if self.first:
-                key = pygame.key.get_pressed()
-                if key[pygame.K_r]:
-                    print(i.position)
 
-        near_robots = filter(lambda x: self.position.get_distance(x.position) < min(
-            self.avoid_radius, x.avoid_radius), robots)
-
-        near_robots = [self.position - x.position for x in near_robots]
-
-        if len(near_robots) > 0:
-            #Average position of near_robots
-            weighted_direction = map(
-                    lambda x: self.position.get_distance(x) * x * 0.0001,
-                    near_robots)
-
-            mean_direction = reduce(Vec2d.mean, weighted_direction)
-
-            # DEBUG:
-            self.mean_direction = mean_direction
-
-            if mean_direction is not None:
-                movement += mean_direction
-
-        else:
-            self.mean_direction = Vec2d(0,0)
-
-        movement += self.direction * self.speed
-        self.position += time * movement * 0.1
+        movement += self.direction
+        self.position += time * (movement * self.speed) * 0.1
 
     def draw(self, surface):
         xpos = int(self.position.x)
         ypos = int(self.position.y)
 
         pygame.draw.circle(surface, self.color, (xpos,ypos), 10, 0)
-        pygame.draw.circle(surface, self.color, (xpos,ypos), self.avoid_radius, 2)
         pygame.draw.aaline(surface, (0,0,255), self.position, self.position+(self.direction*30), 10)
-        pygame.draw.aaline(surface, (0,255,0), self.position, self.position-(self.mean_direction*30), 10)
 
         if self.target is not None:
             pygame.draw.circle(surface, (255,0,0), (xpos,ypos), 5, 0)
@@ -166,8 +131,6 @@ class App:
                 rob.position = Coordinate(*pygame.mouse.get_pos())
 
                 mag = 2
-                if len(self.robots) == 0:
-                    rob.first = True
 
                 self.robots.append(rob)
 
