@@ -220,9 +220,3 @@ class App:
 if __name__ == "__main__":
     app = App()
     app.on_execute()
-
-r1 = Robot()
-r1.position = Vec2d((10,15))
-
-t1 = Robot()
-t1.position = Vec2d((20,15))
