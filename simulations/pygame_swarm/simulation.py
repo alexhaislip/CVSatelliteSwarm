@@ -124,19 +124,20 @@ class Robot():
         if self.target is not None:
             pygame.draw.circle(surface, (255,0,0), (xpos,ypos), 5, 0)
 
-        if True:
-            # Show Collision Area
-            if not self.collision:
-                pygame.draw.rect(surface, (0,0,0), (xpos-20, ypos, 40, 120), 2)
-            else:
-                pygame.draw.rect(surface, (0,0,0), (xpos-20, ypos, 40, 120), 0)
+    def draw_coll_debug(self, surface):
+        # Show Collision Area
+        xpos = int(self.position.x)
+        ypos = int(self.position.y)
+        if not self.collision:
+            pygame.draw.rect(surface, (50,50,50), (xpos-20, ypos, 40, 120), 2)
+        else:
+            pygame.draw.rect(surface, (50,50,50), (xpos-20, ypos, 40, 120), 0)
 
-        if True:
-            # Show local space dots
-            for i in self.local_robots:
-                lxpos = int(i.position.x + self.position.x)
-                lypos = int(i.position.y + self.position.y)
-                pygame.draw.circle(surface, self.color, (lxpos, lypos), 3, 0)
+        # Show local space dots
+        for i in self.local_robots:
+            lxpos = int(i.position.x + self.position.x)
+            lypos = int(i.position.y + self.position.y)
+            pygame.draw.circle(surface, self.color, (lxpos, lypos), 3, 0)
 
 class App:
     def __init__(self):
@@ -144,6 +145,9 @@ class App:
         self._display_surf = None
         self.size = self.width, self.height = 800, 600
         self._clock = pygame.time.Clock()
+
+        self.draw_local = False
+        self.draw_collision = False
 
         self.robots = []
 
@@ -171,6 +175,15 @@ class App:
                 for i in self.robots:
                     i.set_target((random.randint(0,800), random.randint(0,600)))
 
+        if event.type == pygame.KEYDOWN:
+            key = pygame.key.get_pressed()
+            if key[pygame.K_q]:
+                self._running = False
+                pygame.quit()
+
+            if key[pygame.K_c]:
+                self.draw_collision = not self.draw_collision
+
     def on_loop(self, time):
         """main loop"""
         for robot in self.robots:
@@ -182,6 +195,8 @@ class App:
 
         for robot in self.robots:
             robot.draw(self._display_surf)
+            if self.draw_collision:
+                robot.draw_coll_debug(self._display_surf)
 
         pygame.display.set_caption("simulation - %02d fps" % fps)
         pygame.display.update()
