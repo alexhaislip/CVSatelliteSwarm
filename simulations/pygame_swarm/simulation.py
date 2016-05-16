@@ -72,9 +72,19 @@ class Robot():
         robots = filter(lambda x: id(x) != id(self), global_robots)
         self.local_robots = map(self.transform_to_local, robots)
 
-        for i in self.local_robots:
-            if -20 < i.position.x < 20 and 0 < i.position.y < 120:
-                self.collision = True
+        collisions = [i for i in self.local_robots
+                if -20 < i.position.x < 20 and 0 < i.position.y < 120]
+
+        if collisions:
+            self.collision = True
+            self.speed = 0.5
+            closest = min(collisions, key=lambda x: x.position.length)
+            if closest.position.x > 0:
+                self.direction.rotate(20)
+            else:
+                self.direction.rotate(-20)
+        else:
+            self.collision = False
 
         movement += self.direction
         self.position += time * (movement * self.speed) * 0.1
